@@ -41,7 +41,7 @@
 /*----------------------------------*/
 
 #pragma compress 1
-#pragma semicolon 1
+//#pragma semicolon 1
 
 /*----------------------------------*/
 /*            DEFINES               */
@@ -65,10 +65,10 @@
 
 // I Take this from Dias Class
 
-new const zclass_name[] = "Tyrant";
-new const zclass_info[] = "| G -> Dash | R -> Shoot Hound |";
-new const zclass_model[] = "zombi_meatwall_fix";
-new const zclass_clawmodel[] = "v_knife_zombimeatwall.mdl";
+new const zclass_name[] = "Tyrant"
+new const zclass_info[] = "| G -> Dash | R -> Shoot Hound |"
+new const zclass_model[] = "zombi_meatwall_fix"
+new const zclass_clawmodel[] = "v_knife_zombimeatwall.mdl"
 const zclass_health = 5000;
 const zclass_speed = 230;
 const Float:zclass_gravity = 1.0;
