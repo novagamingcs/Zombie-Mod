@@ -2,7 +2,7 @@
 *
 * 		The Plugin is Made by N.O.V.A 
 * 	
-*		Credit:- +Arukari , Th3-822
+*		Credit:- +Arukari , Th3-822 , Perfect Scrash
 *			 
 *		Contacts:-
 *
@@ -14,10 +14,11 @@
 *		To Do:-
 *			- Add Ability to Kill Hound
 *			- Add Max Hounds System
-*			- Fix the Player Animation ( i will try FW_ADDTOFULLPACK )
+*			- (Done) Fix the Player Animation ( i will try FW_ADDTOFULLPACK )
 *
 *		Change Logs:-
 *				v 1.0 B :- Released The Beta Plugin
+*				v 1.0 Stable - Fixed Player Animation
 *
 */
 
@@ -48,7 +49,7 @@
 /*----------------------------------*/
 
 #define PLUGIN "[NV] ZP CSO LIKE CLASS TYRANT"
-#define VERSION "1.0 Beta | 30-11-2020"
+#define VERSION "1.0 | 03-12-2020"
 #define AUTHOR "N.O.V.A"
 
 #define TASK_DASH_LOOP 562987
@@ -101,7 +102,7 @@ new const Szsound[][] =
 	"zombie/meatwall/zombiedog_death1.wav",
 	"zombie/meatwall/zombiedog_attack1.wav",
 	"zombie/meatwall/zombiedog_howls.wav",
-	"zombie/meatwall/zombiedog_skill1.wav",
+	"zombie/meatwall/zombiedog_skill1.wav"
 	
 };
 
@@ -139,7 +140,7 @@ enum Cvars
 
 // News
 
-new bool:g_AbilityOn[33],bool:g_dashing[33],g_spr_ef,g_hudsync,g_zclass_tyrant,g_iCvar[Cvars],g_spr_wave,g_gibs_rock,g_max_players;
+new bool:g_AbilityOn[33],bool:g_dashing[33],g_iPlayerAnimation[33],g_spr_ef,g_hudsync,g_zclass_tyrant,g_iCvar[Cvars],g_spr_wave,g_gibs_rock,g_max_players;
 
 /*----------------------------------*/
 /*          PLUGIN START            */
@@ -153,6 +154,8 @@ public plugin_init()
 	register_dictionary("nv_zp_tr_class.txt");
 	
 	register_forward(FM_CmdStart,"fw_CmdStart");
+	register_forward(FM_AddToFullPack, "forward_AddToFullPack", 1); 
+	
 	register_think(g_ClassName_Hound,"Think_Hound");
 	
 	register_clcmd("drop","Clcmd_Dash_Start");
@@ -286,6 +289,7 @@ public zp_user_infected_post(id, infector)
 	{
 		g_AbilityOn[id] = true;
 		g_dashing[id] = false;
+		Reset_Player_Animation(id);
 		set_task(1.0,"Show_Information",id+TASK_HUD_MESSAGE,_,_,"b");
 	}
 	
@@ -312,6 +316,7 @@ public zp_round_ended()
 /*----------------------------------*/
 /*           DASH-SETTINGS          */
 /*----------------------------------*/
+
 
 public Clcmd_Dash_Start(id)
 {
@@ -352,6 +357,28 @@ public fw_CmdStart(id,uc_handle,seed)
 	return FMRES_IGNORED;
 }
 
+// Thanks To Perfect Scrash
+
+public forward_AddToFullPack(es_handle, e, id, host, hostflags, player, pSet)
+{
+	if(!is_user_connected(host))
+		return FMRES_IGNORED;
+
+	if(is_user_alive(id) && player)
+	{
+		if(is_user_capable(id) && g_iPlayerAnimation[id] != -1)
+		{
+			// Set players sequence
+			if(get_es(es_handle, ES_Sequence) != g_iPlayerAnimation[id]) 
+			{
+				set_es(es_handle, ES_Sequence, g_iPlayerAnimation[id]);
+				
+			}
+		}
+	}
+	return FMRES_HANDLED;
+}
+
 public Show_Information(taskid)
 {
 	new id = taskid - TASK_HUD_MESSAGE;
@@ -389,6 +416,7 @@ public Remove_Values(id)
 	remove_task(id+TASK_HUD_MESSAGE);
 	
 	CBP_KillAllHound(id);
+	Reset_Player_Animation(id);
 	
 }
 
@@ -400,6 +428,7 @@ public Dash_Ability_Start(taskid)
 	set_weapon_anim(id,10);
 	Fade_Red(id,150);
 	Util_ScreenShake(id);
+	g_iPlayerAnimation[id] = 107;
 	g_dashing[id] = true;
 	
 }
@@ -415,8 +444,9 @@ public Dash_Ability_Loop(taskid)
 	Velocity[2] = 0.0;	// We Don't Wanted Our Zm To Fly !!!!
 	set_user_velocity(id,Velocity);
 	
+	
 	// This Don't work Mostly.. i tried Everything But Animation is Same.It works if Tyrant is Flying xD
-	set_pev(id,pev_sequence,107); 
+	//set_pev(id,pev_sequence,107); 
 		
 }
 
@@ -429,11 +459,13 @@ public Dash_Ability_Finished(taskid)
 	
 	g_dashing[id] = false;
 	
-	new Float:jOrigin[3];
+	/*new Float:jOrigin[3];
 	pev(id,pev_origin,jOrigin);
 	jOrigin[2] += 50.0;
 	set_pev(id,pev_origin,jOrigin);
-	set_pev(id,pev_sequence,109);
+	set_pev(id,pev_sequence,109);*/
+	
+	g_iPlayerAnimation[id] = 109;
 	
 	emit_sound(id, CHAN_WEAPON, Szsound[S_DASH_FINISH], 1.0, ATTN_NORM, 0, PITCH_NORM);
 }
@@ -687,6 +719,7 @@ public Dash_Create_Wave(id)
 	set_anim(i_Ent,0);
 	
 	set_task(1.0,"remove_valid_entity",i_Ent);
+	set_task(1.5,"Reset_Player_Animation",id);
 	
 	message_begin(MSG_ALL,SVC_TEMPENTITY,iOrigin);
 	write_byte(TE_BEAMCYLINDER);
@@ -740,6 +773,10 @@ public Dash_Create_Wave(id)
 	
 }
 
+public Reset_Player_Animation(id)
+{
+	g_iPlayerAnimation[id] = -1
+}
 /*----------------------------------*/
 /*            OTHER FX 	            */
 /*----------------------------------*/
@@ -1055,3 +1092,6 @@ stock ChatColor(const id, const input[], any:...)
                 }
         }
 }
+/* AMXX-Studio Notes - DO NOT MODIFY BELOW HERE
+*{\\ rtf1\\ ansi\\ deff0{\\ fonttbl{\\ f0\\ fnil Tahoma;}}\n\\ viewkind4\\ uc1\\ pard\\ lang2057\\ f0\\ fs16 \n\\ par }
+*/
