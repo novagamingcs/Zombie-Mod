@@ -806,8 +806,10 @@ public KnockBack(zm,id,value)
 
 public remove_valid_entity(ent)
 {
-	if(pev_valid(ent))
+	if(is_valid_ent(ent))
+	{
 		remove_entity(ent);
+	}
 }
 
 public is_user_capable(id)
