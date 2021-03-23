@@ -844,11 +844,14 @@ public is_user_dashing(id)
 
 public reset_velocity(ent)
 {
-	static Float:fl_Velocity[3];
-	fl_Velocity[0] = 0.0;
-	fl_Velocity[1] = 0.0;
-	fl_Velocity[2] = 0.0;
-	entity_set_vector(ent, EV_VEC_velocity, fl_Velocity);
+	if(is_valid_ent(ent))
+	{
+		static Float:fl_Velocity[3];
+		fl_Velocity[0] = 0.0;
+		fl_Velocity[1] = 0.0;
+		fl_Velocity[2] = 0.0;
+		entity_set_vector(ent, EV_VEC_velocity, fl_Velocity);
+	}
 }
 
 /*----------------------------------*/
